@@ -78,7 +78,7 @@ class NMT(nn.Module):
                                num_layers=1, dropout=dropout_rate, bidirectional=True)
 
         self.decoder = nn.LSTMCell(
-            embed_size + self.hidden_size, self.hidden_size)
+            embed_size + self.hidden_size, self.hidden_size, bias=True)
         self.h_projection = nn.Linear(
             2 * self.hidden_size, self.hidden_size, bias=False)
         self.c_projection = nn.Linear(
@@ -273,7 +273,7 @@ class NMT(nn.Module):
         Y = torch.stack(Y, dim=0)
 
         for y_t in torch.split(Y, 1, dim=0):
-            y_t = y_t.squeeze(dim=0)
+            y_t = y_t.squeeze(0)
             ybar_t = torch.cat((y_t, o_prev), dim=1)
             dec_state, o_t, e_t = self.step(
                 ybar_t, dec_state, enc_hiddens, enc_hiddens_proj, enc_masks)
@@ -350,7 +350,7 @@ class NMT(nn.Module):
         # 1. Apply softmax to e_t to yield alpha_t
         # 2. Use batched matrix multiplication between alpha_t and enc_hiddens to obtain the
         # attention output vector, a_t.
-        alpha_t = F.softmax(e_t, dim=0)
+        alpha_t = F.softmax(e_t)
         a_t = torch.bmm(alpha_t.unsqueeze(1), enc_hiddens)
         a_t = a_t.squeeze(1)
         # $$     Hints:

@@ -32,7 +32,7 @@ import torch
 import torch.nn as nn
 import torch.nn.utils
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+# device = torch.device("cpu")
 
 # ----------
 # CONSTANTS
@@ -222,7 +222,7 @@ def main():
     # Check Python & PyTorch Versions
     assert (sys.version_info >= (3, 5)
             ), "Please update your installation of Python to version >= 3.5"
-    assert(torch.__version__ == "1.0.1"), "Please update your installation of PyTorch. You have {} and you should have version 1.0.0".format(
+    assert(torch.__version__[:3] == "1.0"), "Please update your installation of PyTorch. You have {} and you should have version 1.0.0".format(
         torch.__version__)
 
     # Seed the Random Number Generators
