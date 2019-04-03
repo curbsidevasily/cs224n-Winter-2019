@@ -38,7 +38,6 @@ class NMT(nn.Module):
         """
         super(NMT, self).__init__()
         self.model_embeddings = ModelEmbeddings(embed_size, vocab)
-        # self.device = self.model_embeddings.source.weight.device
         self.hidden_size = hidden_size
         self.dropout_rate = dropout_rate
         self.vocab = vocab
@@ -109,7 +108,6 @@ class NMT(nn.Module):
         source_lengths = [len(s) for s in source]
 
         # Convert list of lists into tensors
-        print(f'embed device on: {self.device}')
         source_padded = self.vocab.src.to_input_tensor(
             source, self.device)   # Tensor: (src_len, b)
         target_padded = self.vocab.tgt.to_input_tensor(
