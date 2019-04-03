@@ -39,6 +39,7 @@ class NMT(nn.Module):
         super(NMT, self).__init__()
         self.model_embeddings = ModelEmbeddings(embed_size, vocab)
         self.device = self.model_embeddings.source.weight.device
+        print(f'embed device on: {self.device}')
         self.hidden_size = hidden_size
         self.dropout_rate = dropout_rate
         self.vocab = vocab
@@ -126,8 +127,6 @@ class NMT(nn.Module):
         enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
         combined_outputs = self.decode(
             enc_hiddens, enc_masks, dec_init_state, target_padded)
-        print(f'combined_o size: {combined_outputs.size()}')
-        print(f'target_vocab_p size: {self.target_vocab_projection}')
         P = torch.stack([F.log_softmax(self.target_vocab_projection(
             c_o), dim=1) for c_o in combined_outputs])
 
@@ -190,7 +189,7 @@ class NMT(nn.Module):
         #                    for i in j] for j in source_padded])
         X = [torch.stack([self.model_embeddings.source(wd) for wd in sent], dim=0)
              for sent in source_padded]
-        X = torch.stack(X, dim=0)
+        X = torch.stack(X, dim=0).to(self.device)
         X = torch.nn.utils.rnn.pack_padded_sequence(X, source_lengths)
         enc_hiddens, (last_hidden, last_cell) = self.encoder(X)
         enc_hiddens = torch.nn.utils.rnn.pad_packed_sequence(
