@@ -109,9 +109,9 @@ class NMT(nn.Module):
 
         # Convert list of lists into tensors
         source_padded = self.vocab.src.to_input_tensor(
-            source)   # Tensor: (src_len, b)
+            source, self.device)   # Tensor: (src_len, b)
         target_padded = self.vocab.tgt.to_input_tensor(
-            target)   # Tensor: (tgt_len, b)
+            target, self.device)   # Tensor: (tgt_len, b)
 
         # Run the network forward:
         # 1. Apply the encoder to `source_padded` by calling `self.encode()`

@@ -32,7 +32,7 @@ import torch
 import torch.nn as nn
 import torch.nn.utils
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# device = torch.device("cpu")
+device = torch.device("cpu")
 
 # ----------
 # CONSTANTS

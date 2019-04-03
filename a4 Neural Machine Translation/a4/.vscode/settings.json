@@ -1,5 +1,5 @@
 {
     "python.linting.pylintEnabled": true,
     "svn.ignoreMissingSvnWarning": true,
-    "python.pythonPath": "C:\\Anaconda3\\python.exe"
+    "python.pythonPath": "/home/wsl/anaconda3/bin/python"
 }
