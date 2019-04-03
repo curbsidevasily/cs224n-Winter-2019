@@ -38,8 +38,7 @@ class NMT(nn.Module):
         """
         super(NMT, self).__init__()
         self.model_embeddings = ModelEmbeddings(embed_size, vocab)
-        self.device = self.model_embeddings.source.weight.device
-        print(f'embed device on: {self.device}')
+        # self.device = self.model_embeddings.source.weight.device
         self.hidden_size = hidden_size
         self.dropout_rate = dropout_rate
         self.vocab = vocab
@@ -110,6 +109,7 @@ class NMT(nn.Module):
         source_lengths = [len(s) for s in source]
 
         # Convert list of lists into tensors
+        print(f'embed device on: {self.device}')
         source_padded = self.vocab.src.to_input_tensor(
             source, self.device)   # Tensor: (src_len, b)
         target_padded = self.vocab.tgt.to_input_tensor(
@@ -228,7 +228,7 @@ class NMT(nn.Module):
 
         # Initialize previous combined output vector o_{t-1} as zero
         batch_size = enc_hiddens.size(0)
-        o_prev = torch.zeros(batch_size, self.hidden_size)
+        o_prev = torch.zeros(batch_size, self.hidden_size).to(self.device)
 
         # Initialize a list we will use to collect the combined output o_t on each step
         combined_outputs = []
@@ -272,7 +272,7 @@ class NMT(nn.Module):
         enc_hiddens_proj = self.att_projection(enc_hiddens)
         Y = [torch.stack([self.model_embeddings.target(wd) for wd in sent], dim=0)
              for sent in target_padded]
-        Y = torch.stack(Y, dim=0)
+        Y = torch.stack(Y, dim=0).to(self.device)
 
         for y_t in torch.split(Y, 1, dim=0):
             y_t = y_t.squeeze(0)
@@ -505,7 +505,7 @@ class NMT(nn.Module):
         return completed_hypotheses
 
     @property
-    def device_(self) -> torch.device:
+    def device(self) -> torch.device:
         """ Determine which device to place the Tensors upon, CPU or GPU.
         """
         return self.model_embeddings.source.weight.device
