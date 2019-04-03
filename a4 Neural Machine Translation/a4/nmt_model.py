@@ -38,6 +38,7 @@ class NMT(nn.Module):
         """
         super(NMT, self).__init__()
         self.model_embeddings = ModelEmbeddings(embed_size, vocab)
+        self.device = self.model_embeddings.source.weight.device
         self.hidden_size = hidden_size
         self.dropout_rate = dropout_rate
         self.vocab = vocab
@@ -88,7 +89,7 @@ class NMT(nn.Module):
         self.combined_output_projection = nn.Linear(
             3 * self.hidden_size, self.hidden_size, bias=False)
         self.target_vocab_projection = nn.Linear(
-            self.output_size, self.hidden_size, bias=False)
+            self.hidden_size, self.output_size, bias=False)
         self.dropout = nn.Dropout(dropout_rate)
 
         # END YOUR CODE
@@ -125,8 +126,10 @@ class NMT(nn.Module):
         enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
         combined_outputs = self.decode(
             enc_hiddens, enc_masks, dec_init_state, target_padded)
-        P = F.log_softmax(self.target_vocab_projection(
-            combined_outputs), dim=-1)
+        print(f'combined_o size: {combined_outputs.size()}')
+        print(f'target_vocab_p size: {self.target_vocab_projection}')
+        P = torch.stack([F.log_softmax(self.target_vocab_projection(
+            c_o), dim=1) for c_o in combined_outputs])
 
         # Zero out, probabilities for which we have nothing in the target text
         target_masks = (target_padded != self.vocab.tgt['<pad>']).float()
@@ -185,7 +188,7 @@ class NMT(nn.Module):
         # https://pytorch.org/docs/stable/tensors.html#torch.Tensor.permute
         # X = torch.tensor([[self.model_embeddings.src(i)
         #                    for i in j] for j in source_padded])
-        X = [torch.stack([self.model_embeddings.src(wd) for wd in sent], dim=0)
+        X = [torch.stack([self.model_embeddings.source(wd) for wd in sent], dim=0)
              for sent in source_padded]
         X = torch.stack(X, dim=0)
         X = torch.nn.utils.rnn.pack_padded_sequence(X, source_lengths)
@@ -268,7 +271,7 @@ class NMT(nn.Module):
         # https://pytorch.org/docs/stable/torch.html#torch.stack
 
         enc_hiddens_proj = self.att_projection(enc_hiddens)
-        Y = [torch.stack([self.model_embeddings.tgt(wd) for wd in sent], dim=0)
+        Y = [torch.stack([self.model_embeddings.target(wd) for wd in sent], dim=0)
              for sent in target_padded]
         Y = torch.stack(Y, dim=0)
 
@@ -350,7 +353,7 @@ class NMT(nn.Module):
         # 1. Apply softmax to e_t to yield alpha_t
         # 2. Use batched matrix multiplication between alpha_t and enc_hiddens to obtain the
         # attention output vector, a_t.
-        alpha_t = F.softmax(e_t)
+        alpha_t = F.softmax(e_t, dim=1)
         a_t = torch.bmm(alpha_t.unsqueeze(1), enc_hiddens)
         a_t = a_t.squeeze(1)
         # $$     Hints:
@@ -503,7 +506,7 @@ class NMT(nn.Module):
         return completed_hypotheses
 
     @property
-    def device(self) -> torch.device:
+    def device_(self) -> torch.device:
         """ Determine which device to place the Tensors upon, CPU or GPU.
         """
         return self.model_embeddings.source.weight.device
