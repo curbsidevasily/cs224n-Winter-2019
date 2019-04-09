@@ -39,7 +39,7 @@ Options:
     --dropout=<float>                       dropout [default: 0.3]
     --max-decoding-time-step=<int>          maximum number of decoding time steps [default: 70]
 """
-import math
+
 import sys
 import pickle
 import time

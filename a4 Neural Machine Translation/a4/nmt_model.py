@@ -442,7 +442,7 @@ class NMT(nn.Module):
                                                                            src_encodings_att_linear.size(2))
 
             y_tm1 = torch.tensor([self.vocab.tgt[hyp[-1]]
-                                  for hyp in hypotheses], dtype=torch.long)
+                                  for hyp in hypotheses], dtype=torch.long, device=self.device)
             y_t_embed = self.model_embeddings.target(y_tm1)
 
             x = torch.cat([y_t_embed, att_tm1], dim=-1)
