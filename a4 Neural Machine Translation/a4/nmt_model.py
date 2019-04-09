@@ -418,13 +418,13 @@ class NMT(nn.Module):
         src_encodings_att_linear = self.att_projection(src_encodings)
 
         h_tm1 = dec_init_vec
-        att_tm1 = torch.zeros(1, self.hidden_size)
+        att_tm1 = torch.zeros(1, self.hidden_size, device=self.device)
 
         eos_id = self.vocab.tgt['</s>']
 
         hypotheses = [['<s>']]
         hyp_scores = torch.zeros(
-            len(hypotheses), dtype=torch.float)
+            len(hypotheses), dtype=torch.float, device=self.device)
         completed_hypotheses = []
 
         t = 0
@@ -486,13 +486,13 @@ class NMT(nn.Module):
                 break
 
             live_hyp_ids = torch.tensor(
-                live_hyp_ids, dtype=torch.long)
+                live_hyp_ids, dtype=torch.long, device=self.device)
             h_tm1 = (h_t[live_hyp_ids], cell_t[live_hyp_ids])
             att_tm1 = att_t[live_hyp_ids]
 
             hypotheses = new_hypotheses
             hyp_scores = torch.tensor(
-                new_hyp_scores, dtype=torch.float)
+                new_hyp_scores, dtype=torch.float, device=self.device)
 
         if len(completed_hypotheses) == 0:
             completed_hypotheses.append(Hypothesis(value=hypotheses[0][1:],
